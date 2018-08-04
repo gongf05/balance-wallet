@@ -1,17 +1,19 @@
-import { account, commonStorage, accountUpdateAccountAddress } from 'balance-common';
+import CodePush from 'react-native-code-push';
+import FCM, { FCMEvent, NotificationType, RemoteNotificationResult, WillPresentNotificationResult } from 'react-native-fcm';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { AppRegistry, AppState, AsyncStorage, Platform } from 'react-native';
-import FCM, { FCMEvent, NotificationType, RemoteNotificationResult, WillPresentNotificationResult } from 'react-native-fcm';
-import { NavigationActions } from 'react-navigation';
-import { connect, Provider } from 'react-redux';
-import { compose, withProps } from 'recompact';
-import { createStore, applyMiddleware, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
+import { account, commonStorage, accountUpdateAccountAddress } from 'balance-common';
+import { AppRegistry, AppState, AsyncStorage, Platform } from 'react-native';
+import { compose, withProps } from 'recompact';
+import { connect, Provider } from 'react-redux';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
+import { NavigationActions } from 'react-navigation';
+
+import Routes from './screens/Routes';
+import transactionsToApprove, { addTransactionToApprove } from './reducers/transactionsToApprove';
 import { walletConnectGetTransaction } from './model/walletconnect';
 import { walletInit } from './model/wallet';
-import transactionsToApprove, { addTransactionToApprove } from './reducers/transactionsToApprove';
-import Routes from './screens/Routes';
 
 const store = createStore(
   combineReducers({ account, transactionsToApprove }),
@@ -138,4 +140,9 @@ const AppWithRedux = compose(
   ),
 )(App);
 
-AppRegistry.registerComponent('BalanceWallet', () => AppWithRedux);
+const AppWithCodePush = CodePush({
+  checkFrequency: CodePush.CheckFrequency.ON_APP_RESUME,
+  installMode: CodePush.InstallMode.ON_NEXT_RESUME,
+})(AppWithRedux);
+
+AppRegistry.registerComponent('BalanceWallet', () => AppWithCodePush);
